@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Security — Sec+{% endblock %}
+{% block content %}
+
+<h1>Threat Intelligence <span class="tag tag-critical" style="font-size:0.75rem;vertical-align:middle;">Sec+</span></h1>
+<p class="subtitle">In this module, I performed log analysis, identified potential threats, and mapped observed behaviors to
+  MITRE ATT&CK techniques as part of my CompTIA Security+ training.
+</p>
+
+<div style="display:flex;gap:8px;margin-bottom:1.5rem;align-items:center;">
+  <button class="btn" onclick="analyze()" style="background:#dc2626;">Analyze Logs</button>
+  <span style="color:var(--muted);font-size:0.85rem;">Using: sample_logs/windows_events.json</span>
+</div>
+
+<div id="loading" class="loading" style="display:none;">
+  <div class="spinner"></div> Parsing logs and running detection rules...
+</div>
+
+<div id="results" style="display:none;">
+  <div class="grid-4" style="margin-bottom:1.25rem;">
+    <div class="stat-card">
+      <div class="stat-label">Total Events</div>
+      <div class="stat-value info-color" id="total-events">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Alerts Generated</div>
+      <div class="stat-value" id="total-alerts">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Critical / High</div>
+      <div class="stat-value critical" id="critical-count">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Detection Rules</div>
+      <div class="stat-value">5</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Alerts — MITRE ATT&CK Mapped</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Severity</th>
+          <th>Alert Type</th>
+          <th>MITRE Technique</th>
+          <th>Description</th>
+          <th>Host</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="alerts-table"></tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>Events by Category</h2>
+      <table><tbody id="category-table"></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Events by Severity</h2>
+      <table><tbody id="severity-table"></tbody></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>MITRE ATT&CK Framework — Techniques Detected</h2>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem;">
+      Each alert is mapped to the MITRE ATT&CK framework — the industry standard for cataloging adversary behavior.
+    </p>
+    <div id="mitre-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+  </div>
+</div>
+
+<script>
+function sevTag(s) {
+  const map = { CRITICAL: 'critical', HIGH: 'high', MEDIUM: 'warning', LOW: 'info', INFO: 'info' };
+  return `<span class="tag tag-${map[s] || 'info'}">${s}</span>`;
+}
+
+async function analyze() {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  try {
+    const res = await fetch('/api/security/analyze');
+    const d = await res.json();
+    if (d.error) { alert(d.error); return; }
+    populate(d);
+    document.getElementById('results').style.display = 'block';
+  } catch(e) { alert('Error: ' + e.message); }
+  finally { document.getElementById('loading').style.display = 'none'; }
+}
+
+function populate(d) {
+  document.getElementById('total-events').textContent = d.total_events;
+  document.getElementById('total-alerts').textContent = d.total_alerts;
+  const critHigh = (d.event_summary.by_severity.critical || 0) + (d.event_summary.by_severity.high || 0);
+  document.getElementById('critical-count').textContent = critHigh;
+
+  const atbody = document.getElementById('alerts-table');
+  atbody.innerHTML = '';
+  for (const a of d.alerts) {
+    atbody.innerHTML += `<tr>
+      <td>${sevTag(a.severity)}</td>
+      <td style="font-weight:500">${a.alert_type}</td>
+      <td>
+        <a class="mitre-link" href="${a.mitre_url}" target="_blank">${a.mitre_technique}</a>
+      </td>
+      <td style="color:var(--muted);font-size:0.82rem">${a.description}</td>
+      <td style="font-family:monospace;font-size:0.8rem">${a.computer || a.source_user || '—'}</td>
+      <td style="color:var(--muted);font-size:0.8rem">${(a.timestamp || a.first_seen || '').replace('T',' ').replace('Z','')}</td>
+    </tr>`;
+  }
+
+  const catTbody = document.getElementById('category-table');
+  catTbody.innerHTML = Object.entries(d.event_summary.by_category)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v]) => `<tr><td style="color:var(--muted)">${k.replace(/_/g,' ')}</td><td style="font-weight:500">${v}</td></tr>`)
+    .join('');
+
+  const sevTbody = document.getElementById('severity-table');
+  const sevColors = { critical: 'critical', high: 'high', warning: 'warning', info: 'info' };
+  sevTbody.innerHTML = Object.entries(d.event_summary.by_severity)
+    .map(([k,v]) => `<tr><td>${sevTag(k.toUpperCase())}</td><td style="font-weight:500">${v}</td></tr>`)
+    .join('');
+
+  const seen = new Set();
+  const mitreDiv = document.getElementById('mitre-cards');
+  mitreDiv.innerHTML = '';
+  for (const a of d.alerts) {
+    if (!seen.has(a.mitre_technique)) {
+      seen.add(a.mitre_technique);
+      const sevColor = { CRITICAL: '#dc2626', HIGH: '#ea580c', MEDIUM: '#d97706' };
+      const col = sevColor[a.severity] || '#3b82f6';
+      mitreDiv.innerHTML += `<div style="background:var(--bg);border:1px solid var(--border);border-left:3px solid ${col};border-radius:6px;padding:10px 14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-family:monospace;font-size:0.8rem;color:${col}">${a.mitre_technique}</span>
+          ${sevTag(a.severity)}
+        </div>
+        <div style="font-weight:500;font-size:0.875rem;margin-bottom:4px;">${a.mitre_name}</div>
+        <a class="mitre-link" href="${a.mitre_url}" target="_blank">View on attack.mitre.org →</a>
+      </div>`;
+    }
+  }
+}
+
+analyze();
+</script>
+{% endblock %}

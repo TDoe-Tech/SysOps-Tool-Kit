@@ -1,0 +1,127 @@
+[
+  {
+    "EventID": 4625,
+    "TimeCreated": "2024-03-15T08:12:33Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-01",
+    "SubjectUserName": "SYSTEM",
+    "TargetUserName": "administrator",
+    "LogonType": 3,
+    "IpAddress": "192.168.1.200",
+    "FailureReason": "Unknown user name or bad password",
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4625,
+    "TimeCreated": "2024-03-15T08:12:35Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-01",
+    "SubjectUserName": "SYSTEM",
+    "TargetUserName": "administrator",
+    "LogonType": 3,
+    "IpAddress": "192.168.1.200",
+    "FailureReason": "Unknown user name or bad password",
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4625,
+    "TimeCreated": "2024-03-15T08:12:37Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-01",
+    "SubjectUserName": "SYSTEM",
+    "TargetUserName": "administrator",
+    "LogonType": 3,
+    "IpAddress": "192.168.1.200",
+    "FailureReason": "Unknown user name or bad password",
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4625,
+    "TimeCreated": "2024-03-15T08:12:39Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-01",
+    "TargetUserName": "administrator",
+    "LogonType": 3,
+    "IpAddress": "192.168.1.200",
+    "FailureReason": "Unknown user name or bad password",
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4625,
+    "TimeCreated": "2024-03-15T08:12:41Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-01",
+    "TargetUserName": "administrator",
+    "LogonType": 3,
+    "IpAddress": "192.168.1.200",
+    "FailureReason": "Unknown user name or bad password",
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4740,
+    "TimeCreated": "2024-03-15T08:12:50Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "DC-01",
+    "TargetUserName": "administrator",
+    "SubjectUserName": "WORKSTATION-01$",
+    "Message": "A user account was locked out."
+  },
+  {
+    "EventID": 4672,
+    "TimeCreated": "2024-03-15T09:05:12Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-02",
+    "SubjectUserName": "jsmith",
+    "LogonType": 2,
+    "IpAddress": "192.168.1.45",
+    "PrivilegesAssigned": "SeDebugPrivilege, SeImpersonatePrivilege, SeTcbPrivilege",
+    "Message": "Special privileges assigned to new logon."
+  },
+  {
+    "EventID": 4624,
+    "TimeCreated": "2024-03-15T09:05:10Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-02",
+    "SubjectUserName": "jsmith",
+    "LogonType": 2,
+    "IpAddress": "192.168.1.45",
+    "Message": "An account was successfully logged on."
+  },
+  {
+    "EventID": 4698,
+    "TimeCreated": "2024-03-15T09:10:03Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-02",
+    "SubjectUserName": "jsmith",
+    "TaskName": "\\Microsoft\\Windows\\MaliciousTask",
+    "Message": "A scheduled task was created."
+  },
+  {
+    "EventID": 4624,
+    "TimeCreated": "2024-03-15T10:00:00Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "FILESERVER-01",
+    "SubjectUserName": "mwilson",
+    "LogonType": 3,
+    "IpAddress": "192.168.1.77",
+    "Message": "An account was successfully logged on."
+  },
+  {
+    "EventID": 4624,
+    "TimeCreated": "2024-03-15T10:30:00Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "FILESERVER-01",
+    "SubjectUserName": "mwilson",
+    "LogonType": 3,
+    "IpAddress": "192.168.1.77",
+    "Message": "An account was successfully logged on."
+  },
+  {
+    "EventID": 1102,
+    "TimeCreated": "2024-03-15T11:22:44Z",
+    "Source": "Microsoft-Windows-Security-Auditing",
+    "Computer": "WORKSTATION-02",
+    "SubjectUserName": "jsmith",
+    "Message": "The audit log was cleared."
+  }
+]

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SysOps Toolkit {% block title %}Dashboard{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3e;
+      --text: #e2e8f0; --muted: #7c8db5; --accent: #3b82f6;
+      --green: #22c55e; --yellow: #f59e0b; --red: #ef4444; --purple: #a855f7;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    nav {
+      display: flex; align-items: center; gap: 0; border-bottom: 1px solid var(--border);
+      background: var(--surface); padding: 0 2rem; height: 56px;
+    }
+    .nav-brand { font-weight: 700; font-size: 1rem; color: var(--text); text-decoration: none; margin-right: 2rem; }
+    .nav-brand span { color: var(--accent); }
+    nav a {
+      text-decoration: none; color: var(--muted); font-size: 0.875rem;
+      padding: 0 1rem; height: 56px; display: flex; align-items: center;
+      border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+    }
+    nav a:hover, nav a.active { color: var(--text); border-bottom-color: var(--accent); }
+    nav a .badge {
+      font-size: 0.65rem; padding: 1px 6px; border-radius: 4px;
+      margin-left: 6px; font-weight: 600;
+    }
+    .badge-aplus { background: #1e3a5f; color: #60a5fa; }
+    .badge-netplus { background: #14532d; color: #4ade80; }
+    .badge-secplus { background: #4a1d1d; color: #f87171; }
+    main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+    h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--muted); font-size: 0.875rem; margin-bottom: 2rem; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+    }
+    .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+    .stat-value { font-size: 1.4rem; font-weight: 600; }
+    .ok { color: var(--green); }
+    .warning { color: var(--yellow); }
+    .critical { color: var(--red); }
+    .info-color { color: var(--accent); }
+    .btn {
+      background: var(--accent); color: white; border: none; padding: 8px 18px;
+      border-radius: 6px; font-size: 0.875rem; cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-ghost {
+      background: transparent; color: var(--muted); border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+    input[type="text"] {
+      background: var(--bg); color: var(--text); border: 1px solid var(--border);
+      border-radius: 6px; padding: 7px 12px; font-size: 0.875rem; outline: none;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 8px 12px; color: var(--muted); font-weight: 500;
+         font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+         border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    .tag {
+      display: inline-block; font-size: 0.7rem; padding: 2px 8px;
+      border-radius: 4px; font-weight: 600;
+    }
+    .tag-critical { background: #4a1d1d; color: #f87171; }
+    .tag-high { background: #431407; color: #fb923c; }
+    .tag-warning { background: #422006; color: #fbbf24; }
+    .tag-info { background: #1e3a5f; color: #60a5fa; }
+    .tag-ok { background: #14532d; color: #4ade80; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border);
+               border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); padding: 2rem; }
+    .mitre-link { color: var(--accent); font-size: 0.75rem; text-decoration: none; }
+    .mitre-link:hover { text-decoration: underline; }
+    pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+          padding: 1rem; font-size: 0.8rem; overflow-x: auto; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-brand">Sys<span>Ops</span> Toolkit</a>
+    <a href="/hardware" {% if request.path == '/hardware' %}class="active"{% endif %}>
+      Hardware <span class="badge badge-aplus">A+</span>
+    </a>
+    <a href="/network" {% if request.path == '/network' %}class="active"{% endif %}>
+      Network <span class="badge badge-netplus">Net+</span>
+    </a>
+    <a href="/security" {% if request.path == '/security' %}class="active"{% endif %}>
+      Security <span class="badge badge-secplus">Sec+</span>
+    </a>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

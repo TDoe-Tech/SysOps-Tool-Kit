@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Hardware — A+{% endblock %}
+{% block content %}
+
+<h1>Hardware Diagnostics <span class="tag tag-info" style="font-size:0.75rem;vertical-align:middle;">A+</span></h1>
+<p class="subtitle">In this module, I applied CompTIA A+ Core 1 and Core 2 concepts by performing hardware monitoring,
+  following structured troubleshooting methodologies, and producing diagnostic reports.
+</p>
+
+<div style="display:flex;gap:10px;margin-bottom:1.5rem;">
+  <button class="btn" onclick="loadDiagnostics()">Run Diagnostics</button>
+  <a class="btn btn-ghost" href="/api/hardware/report" target="_blank" style="text-decoration:none;">Export HTML Report</a>
+</div>
+
+<div id="loading" class="loading" style="display:none;">
+  <div class="spinner"></div> Running hardware diagnostics...
+</div>
+
+<div id="results" style="display:none;">
+  <div class="grid-4" style="margin-bottom:1.25rem;">
+    <div class="stat-card">
+      <div class="stat-label">Overall Health</div>
+      <div class="stat-value" id="overall-health">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">CPU Usage</div>
+      <div class="stat-value" id="cpu-usage">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">RAM Used</div>
+      <div class="stat-value" id="ram-used">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Uptime</div>
+      <div class="stat-value" id="uptime">—</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h2>CPU</h2>
+      <table>
+        <tr><td style="color:var(--muted)">Usage</td><td id="cpu-detail-usage">—</td></tr>
+        <tr><td style="color:var(--muted)">Physical Cores</td><td id="cpu-cores-phys">—</td></tr>
+        <tr><td style="color:var(--muted)">Logical Cores</td><td id="cpu-cores-log">—</td></tr>
+        <tr><td style="color:var(--muted)">Current Frequency</td><td id="cpu-freq">—</td></tr>
+        <tr><td style="color:var(--muted)">Status</td><td id="cpu-status">—</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Memory (RAM)</h2>
+      <table>
+        <tr><td style="color:var(--muted)">Total</td><td id="ram-total">—</td></tr>
+        <tr><td style="color:var(--muted)">Used</td><td id="ram-detail-used">—</td></tr>
+        <tr><td style="color:var(--muted)">Available</td><td id="ram-avail">—</td></tr>
+        <tr><td style="color:var(--muted)">Swap Total</td><td id="swap-total">—</td></tr>
+        <tr><td style="color:var(--muted)">Status</td><td id="ram-status">—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Disk Health</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Device</th><th>Mount</th><th>FS Type</th>
+          <th>Total</th><th>Used</th><th>Free</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="disk-table"></tbody>
+    </table>
+  </div>
+
+  <div class="card" id="temp-card" style="display:none;">
+    <h2>Temperature Sensors</h2>
+    <table><tbody id="temp-table"></tbody></table>
+  </div>
+</div>
+
+<script>
+function statusTag(s) {
+  const map = { OK: 'ok', HEALTHY: 'ok', WARNING: 'warning', CRITICAL: 'critical' };
+  return `<span class="tag tag-${map[s] || 'info'}">${s}</span>`;
+}
+
+async function loadDiagnostics() {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  try {
+    const res = await fetch('/api/hardware/diagnostics');
+    const d = await res.json();
+    populateDashboard(d);
+    document.getElementById('results').style.display = 'block';
+  } catch(e) {
+    alert('Error fetching diagnostics: ' + e.message);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+
+function populateDashboard(d) {
+  const healthClasses = { HEALTHY: 'ok', OK: 'ok', WARNING: 'warning', CRITICAL: 'critical' };
+  document.getElementById('overall-health').innerHTML = `<span class="${healthClasses[d.overall_health] || ''}">${d.overall_health}</span>`;
+  document.getElementById('cpu-usage').textContent = d.cpu.usage_percent + '%';
+  document.getElementById('ram-used').textContent = d.ram.used_gb + ' GB';
+  document.getElementById('uptime').textContent = d.system.uptime_hours + 'h';
+
+  document.getElementById('cpu-detail-usage').textContent = d.cpu.usage_percent + '%';
+  document.getElementById('cpu-cores-phys').textContent = d.cpu.core_count_physical;
+  document.getElementById('cpu-cores-log').textContent = d.cpu.core_count_logical;
+  document.getElementById('cpu-freq').textContent = (d.cpu.freq_current_mhz || 'N/A') + ' MHz';
+  document.getElementById('cpu-status').innerHTML = statusTag(d.cpu.status);
+
+  document.getElementById('ram-total').textContent = d.ram.total_gb + ' GB';
+  document.getElementById('ram-detail-used').textContent = `${d.ram.used_gb} GB (${d.ram.usage_percent}%)`;
+  document.getElementById('ram-avail').textContent = d.ram.available_gb + ' GB';
+  document.getElementById('swap-total').textContent = d.ram.swap_total_gb + ' GB';
+  document.getElementById('ram-status').innerHTML = statusTag(d.ram.status);
+
+  const diskTbody = document.getElementById('disk-table');
+  diskTbody.innerHTML = '';
+  for (const disk of d.disks) {
+    diskTbody.innerHTML += `<tr>
+      <td style="font-family:monospace;font-size:0.8rem">${disk.device}</td>
+      <td>${disk.mountpoint}</td>
+      <td>${disk.fstype}</td>
+      <td>${disk.total_gb} GB</td>
+      <td>${disk.used_gb} GB (${disk.usage_percent}%)</td>
+      <td>${disk.free_gb} GB</td>
+      <td>${statusTag(disk.status)}</td>
+    </tr>`;
+  }
+
+  if (d.temperature && d.temperature.available && d.temperature.sensors) {
+    const tempTbody = document.getElementById('temp-table');
+    tempTbody.innerHTML = '';
+    for (const [sensor, entries] of Object.entries(d.temperature.sensors)) {
+      for (const e of entries) {
+        tempTbody.innerHTML += `<tr>
+          <td style="color:var(--muted)">${sensor} / ${e.label}</td>
+          <td>${e.current_c}°C</td>
+          <td>${statusTag(e.status)}</td>
+        </tr>`;
+      }
+    }
+    document.getElementById('temp-card').style.display = 'block';
+  }
+}
+
+loadDiagnostics();
+</script>
+{% endblock %}

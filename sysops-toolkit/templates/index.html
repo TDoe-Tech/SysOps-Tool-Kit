@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<h1>SysOps Toolkit</h1>
+<p class="subtitle">I built a unified IT operations dashboard to demonstrate my skills across CompTIA A+, Network+, and Security+ domains.</p>
+
+<div class="grid-3" style="margin-bottom: 2rem;">
+  <div class="card" style="border-color: #1e3a5f;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+      <span class="tag tag-info">CompTIA A+</span>
+    </div>
+    <h2 style="margin-bottom:0.5rem;">Hardware Diagnostics</h2>
+    <p style="color:var(--muted);font-size:0.875rem;margin-bottom:1rem;">
+      Real time CPU, RAM, disk, and temperature monitoring with pass/fail health reporting.
+    </p>
+    <a href="/hardware" class="btn" style="text-decoration:none;display:inline-block;">Open Module →</a>
+  </div>
+
+  <div class="card" style="border-color: #14532d;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+      <span class="tag tag-ok">CompTIA Net+</span>
+    </div>
+    <h2 style="margin-bottom:0.5rem;">Network Analysis</h2>
+    <p style="color:var(--muted);font-size:0.875rem;margin-bottom:1rem;">
+      Host discovery, subnet calculator, MAC/OUI lookup, and network topology mapping.
+    </p>
+    <a href="/network" class="btn" style="text-decoration:none;display:inline-block;background:#16a34a;">Open Module →</a>
+  </div>
+
+  <div class="card" style="border-color: #4a1d1d;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+      <span class="tag tag-critical">CompTIA Sec+</span>
+    </div>
+    <h2 style="margin-bottom:0.5rem;">Threat Intelligence</h2>
+    <p style="color:var(--muted);font-size:0.875rem;margin-bottom:1rem;">
+      Log analysis, rule-based threat detection, and MITRE ATT&amp;CK technique mapping.
+    </p>
+    <a href="/security" class="btn" style="text-decoration:none;display:inline-block;background:#dc2626;">Open Module →</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>About This Project</h2>
+  <p style="color:var(--muted);font-size:0.875rem;line-height:1.7;">
+    I built the SysOps Toolkit as a portfolio project to showcase my hands on IT and cybersecurity skills developed through 
+    professional experience and certification training. Each module aligns with CompTIA A+, Network+, and Security+ exam objectives
+     covering hardware troubleshooting, network infrastructure, and security operations.
+
+The toolkit is developed using Python, Flask, and open-source libraries with 
+all modules designed to run locally without external API dependencies. 
+This project reflects my ability to apply real-world troubleshooting, networking, and security concepts in a practical environment.
+  </p>
+</div>
+
+{% endblock %}

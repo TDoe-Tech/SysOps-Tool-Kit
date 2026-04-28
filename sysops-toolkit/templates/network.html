@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Network — Net+{% endblock %}
+{% block content %}
+
+<h1>Network Analysis <span class="tag tag-ok" style="font-size:0.75rem;vertical-align:middle;">Net+</span></h1>
+<p class="subtitle">This module demonstrates my ability to perform host discovery, subnetting, 
+  MAC/OUI identification, and network topology mapping using concepts aligned with CompTIA Network+..</p>
+
+<div class="grid-2" style="margin-bottom:1.25rem;">
+
+  <div class="card">
+    <h2>Host Discovery / Network Scan</h2>
+    <div style="display:flex;gap:8px;margin-bottom:1rem;">
+      <input type="text" id="subnet-input" value="192.168.1.0/24" style="flex:1;">
+      <button class="btn" onclick="runScan()" style="background:#16a34a;">Scan Network</button>
+    </div>
+    <div id="scan-loading" class="loading" style="display:none;">
+      <div class="spinner"></div> Scanning network (demo mode if nmap unavailable)...
+    </div>
+    <div id="scan-results" style="display:none;">
+      <p style="color:var(--muted);font-size:0.8rem;margin-bottom:0.75rem;" id="scan-meta"></p>
+      <table>
+        <thead><tr><th>IP</th><th>Hostname</th><th>MAC</th><th>Vendor</th><th>State</th></tr></thead>
+        <tbody id="scan-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Subnet Calculator</h2>
+    <div style="display:flex;gap:8px;margin-bottom:1rem;">
+      <input type="text" id="cidr-input" value="192.168.1.0/24" style="flex:1;">
+      <button class="btn" onclick="calcSubnet()">Calculate</button>
+    </div>
+    <div id="subnet-results" style="display:none;">
+      <table><tbody id="subnet-table"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Subnet Splitter</h2>
+  <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem;">Split a network into smaller subnets. Enter a parent CIDR and target prefix length.</p>
+  <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
+    <input type="text" id="split-cidr" value="192.168.1.0/24" style="flex:1;">
+    <span style="color:var(--muted);font-size:0.875rem;">→ split into /</span>
+    <input type="text" id="split-prefix" value="26" style="width:60px;text-align:center;">
+    <button class="btn" onclick="splitSubnet()">Split</button>
+  </div>
+  <div id="split-results" style="display:none;">
+    <table>
+      <thead><tr><th>#</th><th>Network</th><th>First Host</th><th>Last Host</th><th>Broadcast</th><th>Usable Hosts</th></tr></thead>
+      <tbody id="split-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function runScan() {
+  const subnet = document.getElementById('subnet-input').value;
+  document.getElementById('scan-loading').style.display = 'flex';
+  document.getElementById('scan-results').style.display = 'none';
+  try {
+    const res = await fetch(`/api/network/scan?subnet=${encodeURIComponent(subnet)}`);
+    const d = await res.json();
+    const mode = d.demo_mode ? ' (Demo Mode — nmap not installed)' : '';
+    document.getElementById('scan-meta').textContent =
+      `Found ${d.hosts_found} host(s) on ${d.subnet} at ${d.scan_time}${mode}`;
+    const tbody = document.getElementById('scan-table');
+    tbody.innerHTML = '';
+    for (const h of d.hosts) {
+      tbody.innerHTML += `<tr>
+        <td style="font-family:monospace">${h.ip}</td>
+        <td>${h.hostname}</td>
+        <td style="font-family:monospace;font-size:0.8rem">${h.mac}</td>
+        <td>${h.vendor}</td>
+        <td><span class="tag tag-ok">${h.state}</span></td>
+      </tr>`;
+    }
+    document.getElementById('scan-results').style.display = 'block';
+  } catch(e) { alert('Scan error: ' + e.message); }
+  finally { document.getElementById('scan-loading').style.display = 'none'; }
+}
+
+async function calcSubnet() {
+  const cidr = document.getElementById('cidr-input').value;
+  try {
+    const res = await fetch(`/api/network/subnet?cidr=${encodeURIComponent(cidr)}`);
+    const d = await res.json();
+    if (d.error) { alert(d.error); return; }
+    const rows = [
+      ['Network Address', d.network_address],
+      ['Broadcast Address', d.broadcast_address],
+      ['Subnet Mask', d.subnet_mask],
+      ['Wildcard Mask', d.wildcard_mask],
+      ['Prefix Length', '/' + d.prefix_length],
+      ['First Host', d.first_host],
+      ['Last Host', d.last_host],
+      ['Usable Hosts', d.usable_hosts.toLocaleString()],
+      ['Total Addresses', d.total_addresses.toLocaleString()],
+      ['IP Class', 'Class ' + d.ip_class],
+      ['Private Range', d.is_private ? 'Yes (RFC 1918)' : 'No'],
+    ];
+    const tbody = document.getElementById('subnet-table');
+    tbody.innerHTML = rows.map(([k,v]) =>
+      `<tr><td style="color:var(--muted);width:45%">${k}</td><td style="font-family:monospace">${v}</td></tr>`
+    ).join('');
+    document.getElementById('subnet-results').style.display = 'block';
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function splitSubnet() {
+  const cidr = document.getElementById('split-cidr').value;
+  const prefix = document.getElementById('split-prefix').value;
+  try {
+    const res = await fetch(`/api/network/split?cidr=${encodeURIComponent(cidr)}&prefix=${prefix}`);
+    const subnets = await res.json();
+    if (subnets[0]?.error) { alert(subnets[0].error); return; }
+    const tbody = document.getElementById('split-table');
+    tbody.innerHTML = subnets.map((s, i) => `<tr>
+      <td>${i+1}</td>
+      <td style="font-family:monospace">${s.network_address}/${s.prefix_length}</td>
+      <td style="font-family:monospace">${s.first_host}</td>
+      <td style="font-family:monospace">${s.last_host}</td>
+      <td style="font-family:monospace">${s.broadcast_address}</td>
+      <td>${s.usable_hosts.toLocaleString()}</td>
+    </tr>`).join('');
+    document.getElementById('split-results').style.display = 'block';
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+runScan();
+calcSubnet();
+</script>
+{% endblock %}

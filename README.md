@@ -129,12 +129,16 @@ sysops-toolkit/
 
 ## Screenshots
 
+SysOps Tool Kit DashBoard
 <img width="1389" height="862" alt="image" src="https://github.com/user-attachments/assets/66765999-6b19-4e3a-a0dd-e00e5180061b" />
 
+Hardware Dashboard
 <img width="1389" height="728" alt="image" src="https://github.com/user-attachments/assets/c666a1ea-2fc8-4c71-83d1-4e4568f767d9" />
 
+Network Dashboard
 <img width="1390" height="859" alt="image" src="https://github.com/user-attachments/assets/7d01e292-8844-40ad-a5c0-10cc209a686a" />
 
+Threat Intelligence DashBoard
 <img width="1378" height="859" alt="image" src="https://github.com/user-attachments/assets/25cf3a48-3f18-4bb7-a087-d95a0b2b5cd6" />
 
 \---
